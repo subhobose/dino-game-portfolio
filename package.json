@@ -1,0 +1,9 @@
+﻿{
+  "name": "dino-portfolio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Pixelated Dino Runner game from scratch",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
