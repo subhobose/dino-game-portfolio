@@ -12,6 +12,7 @@
 html,
 body {
   margin: 0;
+  height: 100%;
   min-height: 100%;
   background: linear-gradient(180deg, #fcfcfc, var(--page));
   color: var(--ink);
@@ -19,13 +20,18 @@ body {
 }
 
 body {
-  display: grid;
-  place-items: center;
-  padding: 20px;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
 }
 
 .app {
-  width: min(1000px, 100%);
+  width: min(1220px, 96vw);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .game-shell {
@@ -38,6 +44,7 @@ body {
   display: block;
   width: 100%;
   height: auto;
+  max-height: 76vh;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
 }
@@ -55,6 +62,63 @@ body {
   background: #ffffffea;
 }
 
+.milestone-banner {
+  position: absolute;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 1px solid var(--ink);
+  background: #fff;
+  color: var(--ink);
+  padding: 6px 12px;
+  font-family: inherit;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+
+.milestone-banner:hover {
+  background: #f4f4f4;
+}
+
+.milestone-card {
+  position: absolute;
+  z-index: 2;
+  top: 54%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(560px, calc(100% - 36px));
+  border: 2px solid var(--ink);
+  background: #fff;
+  padding: 14px 16px;
+  box-shadow: 0 8px 26px #0000001f;
+}
+
+.milestone-card h2 {
+  margin: 0 0 8px;
+  font-size: 1.05rem;
+}
+
+.milestone-card p {
+  margin: 8px 0;
+  font-size: 0.86rem;
+  line-height: 1.35;
+}
+
+.milestone-card button {
+  margin-top: 8px;
+  border: 1px solid var(--ink);
+  background: #fff;
+  color: var(--ink);
+  padding: 7px 10px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.milestone-card button:hover {
+  background: #f4f4f4;
+}
+
 .controls {
   margin: 10px 0 0;
   text-align: center;
@@ -66,6 +130,10 @@ body {
 @media (max-width: 640px) {
   body {
     padding: 8px;
+  }
+
+  .app {
+    width: min(1000px, 100vw);
   }
 
   .controls {

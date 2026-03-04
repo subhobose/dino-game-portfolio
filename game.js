@@ -1,6 +1,13 @@
 ﻿const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d", { alpha: false });
 const message = document.getElementById("message");
+const milestoneBanner = document.getElementById("milestone-banner");
+const milestoneCard = document.getElementById("milestone-card");
+const milestoneClose = document.getElementById("milestone-close");
+const milestoneTitle = document.getElementById("milestone-title");
+const milestoneChallenge = document.getElementById("milestone-challenge");
+const milestoneAction = document.getElementById("milestone-action");
+const milestoneOutcome = document.getElementById("milestone-outcome");
 
 const W = canvas.width;
 const H = canvas.height;
@@ -10,10 +17,51 @@ const JUMP_FORCE = -13.8;
 const START_SPEED = 6.2;
 const MAX_SPEED = 12.5;
 const NIGHT_INTERVAL = 700;
-const BIRD_UNLOCK_SCORE = 380;
-
+const TIMELINE_START_YEAR = 2020;
+const TIMELINE_END_YEAR = new Date().getFullYear();
+const TIMELINE_SCORE_PER_YEAR = 220;
 const DINO_SCALE = 3;
 const DINO_X = 82;
+const MILESTONE_SPAWN_LEAD_SCORE = Math.round((W + 70 - DINO_X) * 0.1);
+const MILESTONES = [
+  {
+    year: "2020/2021",
+    title: "Trajectory Shift",
+    challenge: "Mechanical engineering path did not match what energized me most: writing software.",
+    action: "Completed a CS minor, doubled down on coding projects, and built software fundamentals.",
+    outcome: "Pivoted into tech and joined Amadeus as a Software Developer.",
+    timelineYear: 2020.9,
+    retryText: "CLEAR THE 2020/2021 PIVOT",
+  },
+  {
+    year: "Mid 2021",
+    title: "Automation Impact",
+    challenge: "Manual regression for a leading travel chatbot consumed large recurring effort.",
+    action: "Built a Robot Framework based regression suite and introduced the approach to the team.",
+    outcome: "Saved 30+ hours of manual work and inspired additional projects built on the same pattern.",
+    timelineYear: 2021.5,
+    retryText: "CLEAR THE AUTOMATION IMPACT",
+  },
+  {
+    year: "Early 2022",
+    title: "Graduate Leap",
+    challenge: "Wanted deeper fundamentals and stronger depth in data structures and machine learning.",
+    action: "Gained admission to UTD for a Master's in Computer Science with a Data Science focus.",
+    outcome: "Started formal advanced training to level up core CS rigor and ML capability.",
+    timelineYear: 2022.15,
+    retryText: "CLEAR THE GRADUATE LEAP",
+  },
+  {
+    year: "Early 2023",
+    title: "Deep Learning Research",
+    challenge: "First ML research stint on video learning data (Continuous self-supervised learning)",
+    action: "Built an adaptive data augmentation strategy for streaming video dataset.",
+    outcome: "Higher fine-tuning accuracy with lower storage footprint.",
+    timelineYear: 2023.2,
+    retryText: "CLEAR THE RESEARCH MILESTONE",
+  },
+];
+const TOTAL_MILESTONES = MILESTONES.length;
 
 const DINO_RUN_1 = [
   "............#######.",
@@ -57,8 +105,8 @@ const DINO_RUN_2 = [
   "...#########........",
   "....#######.........",
   ".....#####..........",
-  ".........###........",
-  "..........##........",
+  ".......###..........",
+  "........##..........",
 ];
 
 const DINO_JUMP = [
@@ -97,8 +145,13 @@ let speed = START_SPEED;
 let score = 0;
 let best = Number(localStorage.getItem("chrome-dino-best") || 0);
 let tick = 0;
-let obstacleTimer = 0;
 let horizonOffset = 0;
+let unlockedMilestones = 0;
+let activeMilestoneIndex = -1;
+let milestoneCardViewed = [];
+let retryWaitTicks = 0;
+let retryObstacle = null;
+let milestoneCheckpoint = null;
 
 const clouds = Array.from({ length: 4 }, (_, i) => ({
   x: 220 + i * 220,
@@ -169,74 +222,55 @@ function drawGround(colors) {
   }
 }
 
-function spawnObstacle() {
-  if (score < 90 && obstacles.length > 0) return;
+function spawnNextMilestone() {
+  const nextIndex = unlockedMilestones;
+  if (nextIndex >= MILESTONES.length) return;
+  if (obstacles.some((o) => o.type === "milestone" && o.milestoneIndex === nextIndex)) return;
+  const milestone = MILESTONES[nextIndex];
+  const targetScore = Math.max(
+    0,
+    (milestone.timelineYear - TIMELINE_START_YEAR) * TIMELINE_SCORE_PER_YEAR
+  );
+  const spawnTriggerScore = Math.max(0, targetScore - MILESTONE_SPAWN_LEAD_SCORE);
+  if (score < spawnTriggerScore) return;
 
-  const roll = Math.random();
-  if (roll < 0.86 || score < BIRD_UNLOCK_SCORE) {
-    const tall = Math.random() > 0.45;
-    const multi = score > 500 && Math.random() > 0.82;
-    const width = multi ? 44 : 20;
-    const height = tall ? 48 : 36;
-    obstacles.push({
-      type: "cactus",
-      x: W + 30,
-      y: BASE_Y - height + 4,
-      w: width,
-      h: height,
-    });
-    return;
-  }
+  milestoneCheckpoint = {
+    milestoneIndex: nextIndex,
+    score,
+    speed,
+    tick,
+    horizonOffset,
+    dinoY: dino.y,
+    dinoVy: dino.vy,
+    dinoJumping: dino.jumping,
+  };
 
-  const high = Math.random() > 0.5;
   obstacles.push({
-    type: "bird",
-    x: W + 30,
-    y: BASE_Y - (high ? 95 : 68),
-    w: 44,
-    h: 28,
-    flap: 0,
+    type: "milestone",
+    milestoneIndex: nextIndex,
+    x: W + 70,
+    y: BASE_Y - 56,
+    w: 36,
+    h: 56,
   });
-}
-
-function drawCactus(o, color) {
-  ctx.fillStyle = color;
-  if (o.w > 24) {
-    ctx.fillRect(o.x, o.y + 10, 14, o.h - 10);
-    ctx.fillRect(o.x + 16, o.y, 14, o.h);
-    ctx.fillRect(o.x + 32, o.y + 12, 12, o.h - 12);
-    ctx.fillRect(o.x + 2, o.y + 18, 5, 10);
-    ctx.fillRect(o.x + 35, o.y + 20, 5, 10);
-    return;
-  }
-
-  ctx.fillRect(o.x + 6, o.y, 10, o.h);
-  ctx.fillRect(o.x, o.y + 14, 6, 12);
-  ctx.fillRect(o.x + 16, o.y + 10, 6, 12);
-}
-
-function drawBird(o, color) {
-  o.flap += 1;
-  const wingUp = o.flap % 20 < 10;
-
-  ctx.fillStyle = color;
-  ctx.fillRect(o.x + 8, o.y + 11, 24, 8);
-  ctx.fillRect(o.x + 30, o.y + 13, 10, 4);
-  if (wingUp) {
-    ctx.fillRect(o.x + 13, o.y + 4, 14, 5);
-  } else {
-    ctx.fillRect(o.x + 13, o.y + 16, 14, 5);
-  }
 }
 
 function drawObstacles(colors) {
   for (const o of obstacles) {
-    if (o.type === "cactus") {
-      drawCactus(o, colors.ink);
-    } else {
-      drawBird(o, colors.ink);
+    if (o.type === "milestone") {
+      drawMilestoneObstacle(o, colors.ink);
     }
   }
+}
+
+function drawMilestoneObstacle(o, color) {
+  ctx.fillStyle = color;
+  ctx.fillRect(o.x + 8, o.y, 4, o.h);
+  ctx.fillRect(o.x + 24, o.y, 4, o.h);
+  ctx.fillRect(o.x + 8, o.y, 20, 4);
+  ctx.fillRect(o.x + 12, o.y + 16, 12, 4);
+  ctx.fillRect(o.x + 12, o.y + 30, 12, 4);
+  ctx.fillRect(o.x + 12, o.y + 44, 12, 4);
 }
 
 function dinoBounds() {
@@ -259,6 +293,44 @@ function setMessage(text, visible) {
   message.style.display = visible ? "block" : "none";
 }
 
+function showMilestoneBanner(index) {
+  const milestone = MILESTONES[index];
+  milestoneBanner.textContent = `MILESTONE UNLOCKED - ${milestone.year} ${milestone.title} (CLICK)`;
+  milestoneBanner.hidden = false;
+}
+
+function hideMilestoneBanner() {
+  milestoneBanner.hidden = true;
+}
+
+function openMilestoneCard() {
+  if (activeMilestoneIndex < 0 || activeMilestoneIndex >= MILESTONES.length) return;
+  const milestone = MILESTONES[activeMilestoneIndex];
+  milestoneTitle.textContent = `${milestone.year} - ${milestone.title}`;
+  milestoneChallenge.textContent = milestone.challenge;
+  milestoneAction.textContent = milestone.action;
+  milestoneOutcome.textContent = milestone.outcome;
+  state = "milestone";
+  milestoneCard.hidden = false;
+  hideMilestoneBanner();
+}
+
+function closeMilestoneCard() {
+  milestoneCard.hidden = true;
+  if (activeMilestoneIndex >= 0 && activeMilestoneIndex < milestoneCardViewed.length) {
+    milestoneCardViewed[activeMilestoneIndex] = true;
+  }
+  if (state === "milestone") {
+    state = "running";
+  }
+}
+
+function resumeFromMilestoneWait() {
+  if (state !== "milestone_wait") return;
+  hideMilestoneBanner();
+  state = "running";
+}
+
 function startGame() {
   state = "running";
   setMessage("", false);
@@ -269,9 +341,16 @@ function resetGame() {
   speed = START_SPEED;
   score = 0;
   tick = 0;
-  obstacleTimer = 150;
   horizonOffset = 0;
   obstacles.length = 0;
+  unlockedMilestones = 0;
+  activeMilestoneIndex = -1;
+  milestoneCardViewed = new Array(MILESTONES.length).fill(false);
+  retryWaitTicks = 0;
+  retryObstacle = null;
+  milestoneCheckpoint = null;
+  milestoneCard.hidden = true;
+  hideMilestoneBanner();
   dino.vy = 0;
   dino.jumping = false;
   dino.y = BASE_Y - DINO_RUN_1.length * DINO_SCALE;
@@ -289,6 +368,7 @@ function gameOver() {
 function jump() {
   if (state === "idle") startGame();
   if (state === "running" && !dino.jumping) {
+    if (message.style.display !== "none") setMessage("", false);
     dino.vy = JUMP_FORCE;
     dino.jumping = true;
   }
@@ -307,15 +387,23 @@ function updatePhysics() {
 }
 
 function updateObstacles() {
-  obstacleTimer -= speed;
-  if (obstacleTimer <= 0) {
-    spawnObstacle();
-    obstacleTimer = Math.max(150, 230 + Math.random() * 170 - speed * 3);
-  }
+  spawnNextMilestone();
 
   for (let i = obstacles.length - 1; i >= 0; i -= 1) {
     const o = obstacles[i];
     o.x -= speed;
+
+    if (o.type === "milestone" && o.milestoneIndex === unlockedMilestones && o.x + o.w < dino.x - 6) {
+      activeMilestoneIndex = o.milestoneIndex;
+      unlockedMilestones += 1;
+      milestoneCheckpoint = null;
+      setMessage("", false);
+      showMilestoneBanner(activeMilestoneIndex);
+      state = "milestone_wait";
+      obstacles.splice(i, 1);
+      continue;
+    }
+
     if (o.x + o.w < -40) obstacles.splice(i, 1);
   }
 }
@@ -339,7 +427,27 @@ function detectCollision() {
       w: o.w - 8,
       h: o.h - 6,
     };
-    if (intersects(d, box)) return true;
+    if (!intersects(d, box)) continue;
+
+    if (o.type === "milestone" && o.milestoneIndex === unlockedMilestones) {
+      if (milestoneCheckpoint && milestoneCheckpoint.milestoneIndex === o.milestoneIndex) {
+        score = milestoneCheckpoint.score;
+        speed = milestoneCheckpoint.speed;
+        tick = milestoneCheckpoint.tick;
+        horizonOffset = milestoneCheckpoint.horizonOffset;
+        dino.y = milestoneCheckpoint.dinoY;
+        dino.vy = milestoneCheckpoint.dinoVy;
+        dino.jumping = milestoneCheckpoint.dinoJumping;
+      }
+
+      retryObstacle = o;
+      retryWaitTicks = 90;
+      state = "retry_wait";
+      setMessage(`RETRY: ${MILESTONES[o.milestoneIndex].retryText}`, true);
+      return false;
+    }
+
+    return true;
   }
   return false;
 }
@@ -350,7 +458,58 @@ function drawHud(colors) {
   ctx.textAlign = "right";
   ctx.textBaseline = "top";
   const hiText = `HI ${fmt(best)} ${fmt(score)}`;
-  ctx.fillText(hiText, W - 20, 14);
+  ctx.fillText(hiText, W - 20, H - 36);
+
+  const unlockedCount = unlockedMilestones;
+  ctx.fillStyle = colors.hud;
+  ctx.font = "14px Courier New";
+  ctx.textAlign = "left";
+  ctx.fillText(`MILESTONES UNLOCKED ${unlockedCount}/${TOTAL_MILESTONES}`, 20, H - 28);
+}
+
+function drawTimeline(colors) {
+  const yearSpan = Math.max(1, TIMELINE_END_YEAR - TIMELINE_START_YEAR);
+  const totalTimelineScore = yearSpan * TIMELINE_SCORE_PER_YEAR;
+  const progress = Math.max(0, Math.min(1, score / totalTimelineScore));
+  const timelineX = 30;
+  const timelineY = 44;
+  const timelineW = W - 60;
+  const timelineH = 6;
+  const currentYear = Math.min(
+    TIMELINE_END_YEAR,
+    TIMELINE_START_YEAR + Math.floor(progress * yearSpan)
+  );
+
+  ctx.fillStyle = colors.sub;
+  ctx.fillRect(timelineX, timelineY, timelineW, timelineH);
+
+  ctx.fillStyle = colors.ink;
+  ctx.fillRect(timelineX, timelineY, Math.max(2, timelineW * progress), timelineH);
+
+  for (let year = TIMELINE_START_YEAR; year <= TIMELINE_END_YEAR; year += 1) {
+    const t = (year - TIMELINE_START_YEAR) / yearSpan;
+    const x = Math.round(timelineX + timelineW * t);
+    const active = year <= currentYear;
+
+    ctx.fillStyle = active ? colors.ink : colors.sub;
+    ctx.fillRect(x, timelineY - 4, 1, timelineH + 8);
+
+    ctx.font = "13px Courier New";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "bottom";
+
+    if (year === currentYear) {
+      const label = String(year);
+      const labelW = Math.max(34, label.length * 8 + 8);
+      ctx.fillStyle = colors.ink;
+      ctx.fillRect(x - labelW / 2, timelineY - 24, labelW, 16);
+      ctx.fillStyle = colors.bg;
+      ctx.fillText(label, x, timelineY - 12);
+    } else if (year % 2 === 1 || year === TIMELINE_END_YEAR || year === TIMELINE_START_YEAR) {
+      ctx.fillStyle = active ? colors.ink : colors.hud;
+      ctx.fillText(String(year), x, timelineY - 8);
+    }
+  }
 }
 
 function drawNightDetails(colors) {
@@ -371,6 +530,7 @@ function render() {
   ctx.fillRect(0, 0, W, H);
 
   drawNightDetails(colors);
+  drawTimeline(colors);
 
   for (const c of clouds) {
     drawCloud(c, colors.cloud);
@@ -388,7 +548,9 @@ function render() {
 }
 
 function update() {
-  tick += 1;
+  if (state === "running" || state === "idle") {
+    tick += 1;
+  }
 
   if (state === "running") {
     speed = Math.min(MAX_SPEED, START_SPEED + score / 850);
@@ -407,7 +569,17 @@ function update() {
       best = Math.floor(score);
       localStorage.setItem("chrome-dino-best", String(best));
     }
-  } else {
+  } else if (state === "retry_wait") {
+    retryWaitTicks -= 1;
+    if (retryWaitTicks <= 0) {
+      if (retryObstacle) {
+        retryObstacle.x = dino.x + 500;
+      }
+      retryObstacle = null;
+      setMessage("", false);
+      state = "running";
+    }
+  } else if (state === "idle") {
     updateClouds();
     horizonOffset += 1;
   }
@@ -417,6 +589,26 @@ function update() {
 }
 
 window.addEventListener("keydown", (e) => {
+  if (state === "milestone_wait") {
+    if (["Space", "ArrowUp", "KeyW"].includes(e.code)) {
+      e.preventDefault();
+      resumeFromMilestoneWait();
+      jump();
+    } else if (e.code === "Enter") {
+      e.preventDefault();
+      resumeFromMilestoneWait();
+    }
+    return;
+  }
+
+  if (state === "milestone") {
+    if (["Space", "Enter", "Escape"].includes(e.code)) {
+      e.preventDefault();
+      closeMilestoneCard();
+    }
+    return;
+  }
+
   if (["Space", "ArrowUp", "KeyW"].includes(e.code)) {
     e.preventDefault();
     if (state === "gameover") {
@@ -435,7 +627,41 @@ window.addEventListener("keydown", (e) => {
   }
 });
 
-window.addEventListener("pointerdown", () => {
+milestoneBanner.addEventListener("pointerdown", (e) => {
+  e.stopPropagation();
+});
+
+milestoneBanner.addEventListener("click", () => {
+  if (activeMilestoneIndex >= 0 && !milestoneCardViewed[activeMilestoneIndex]) {
+    openMilestoneCard();
+    return;
+  }
+  resumeFromMilestoneWait();
+});
+
+milestoneCard.addEventListener("pointerdown", (e) => {
+  e.stopPropagation();
+});
+
+milestoneClose.addEventListener("click", () => {
+  closeMilestoneCard();
+});
+
+window.addEventListener("pointerdown", (e) => {
+  if (e.target.closest("#milestone-banner") || e.target.closest("#milestone-card")) {
+    return;
+  }
+
+  if (state === "milestone_wait") {
+    resumeFromMilestoneWait();
+    jump();
+    return;
+  }
+
+  if (state === "milestone") {
+    return;
+  }
+
   if (state === "gameover") {
     resetGame();
     startGame();

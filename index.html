@@ -11,6 +11,14 @@
       <section class="game-shell" aria-label="Chrome dinosaur runner game">
         <canvas id="game" width="960" height="300" role="img" aria-label="Pixel dinosaur runner"></canvas>
         <p id="message" class="message">PRESS SPACE OR TAP TO START</p>
+        <button id="milestone-banner" class="milestone-banner" type="button" hidden>MILESTONE UNLOCKED - VIEW DETAILS</button>
+        <article id="milestone-card" class="milestone-card" hidden>
+          <h2 id="milestone-title">Milestone</h2>
+          <p><strong>Challenge:</strong> <span id="milestone-challenge"></span></p>
+          <p><strong>Action:</strong> <span id="milestone-action"></span></p>
+          <p><strong>Outcome:</strong> <span id="milestone-outcome"></span></p>
+          <button id="milestone-close" type="button">Continue Journey</button>
+        </article>
       </section>
       <p class="controls">SPACE / UP / W / TAP TO JUMP</p>
     </main>
