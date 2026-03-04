@@ -8,6 +8,11 @@ const milestoneTitle = document.getElementById("milestone-title");
 const milestoneChallenge = document.getElementById("milestone-challenge");
 const milestoneAction = document.getElementById("milestone-action");
 const milestoneOutcome = document.getElementById("milestone-outcome");
+const gameoverPanel = document.getElementById("gameover-panel");
+const gameoverTitle = document.getElementById("gameover-title");
+const gameoverYear = document.getElementById("gameover-year");
+const resumeBtn = document.getElementById("resume-btn");
+const restartBtn = document.getElementById("restart-btn");
 
 const W = canvas.width;
 const H = canvas.height;
@@ -149,9 +154,9 @@ let horizonOffset = 0;
 let unlockedMilestones = 0;
 let activeMilestoneIndex = -1;
 let milestoneCardViewed = [];
-let retryWaitTicks = 0;
-let retryObstacle = null;
 let milestoneCheckpoint = null;
+let resumeSnapshot = null;
+let resumeObstacle = null;
 
 const clouds = Array.from({ length: 4 }, (_, i) => ({
   x: 220 + i * 220,
@@ -293,6 +298,24 @@ function setMessage(text, visible) {
   message.style.display = visible ? "block" : "none";
 }
 
+function hideGameOverPanel() {
+  gameoverPanel.hidden = true;
+}
+
+function showGameOverPanel(title, canResume) {
+  gameoverTitle.textContent = title;
+  const yearSpan = Math.max(1, TIMELINE_END_YEAR - TIMELINE_START_YEAR);
+  const totalTimelineScore = yearSpan * TIMELINE_SCORE_PER_YEAR;
+  const progress = Math.max(0, Math.min(1, score / totalTimelineScore));
+  const yearReached = Math.min(
+    TIMELINE_END_YEAR,
+    TIMELINE_START_YEAR + Math.floor(progress * yearSpan)
+  );
+  gameoverYear.textContent = `Year Reached: ${yearReached}`;
+  resumeBtn.hidden = !canResume;
+  gameoverPanel.hidden = false;
+}
+
 function showMilestoneBanner(index) {
   const milestone = MILESTONES[index];
   milestoneBanner.textContent = `MILESTONE UNLOCKED - ${milestone.year} ${milestone.title} (CLICK)`;
@@ -331,6 +354,23 @@ function resumeFromMilestoneWait() {
   state = "running";
 }
 
+function resumeFromGameOver() {
+  if (!resumeSnapshot || !resumeObstacle) return;
+
+  score = resumeSnapshot.score;
+  speed = resumeSnapshot.speed;
+  tick = resumeSnapshot.tick;
+  horizonOffset = resumeSnapshot.horizonOffset;
+  dino.y = resumeSnapshot.dinoY;
+  dino.vy = resumeSnapshot.dinoVy;
+  dino.jumping = resumeSnapshot.dinoJumping;
+  resumeObstacle.x = dino.x + 500;
+
+  hideGameOverPanel();
+  setMessage("", false);
+  state = "running";
+}
+
 function startGame() {
   state = "running";
   setMessage("", false);
@@ -346,11 +386,12 @@ function resetGame() {
   unlockedMilestones = 0;
   activeMilestoneIndex = -1;
   milestoneCardViewed = new Array(MILESTONES.length).fill(false);
-  retryWaitTicks = 0;
-  retryObstacle = null;
   milestoneCheckpoint = null;
+  resumeSnapshot = null;
+  resumeObstacle = null;
   milestoneCard.hidden = true;
   hideMilestoneBanner();
+  hideGameOverPanel();
   dino.vy = 0;
   dino.jumping = false;
   dino.y = BASE_Y - DINO_RUN_1.length * DINO_SCALE;
@@ -358,11 +399,12 @@ function resetGame() {
   setMessage("PRESS SPACE OR TAP TO START", true);
 }
 
-function gameOver() {
+function gameOver(title = "Game Over", canResume = false) {
   state = "gameover";
   best = Math.max(best, Math.floor(score));
   localStorage.setItem("chrome-dino-best", String(best));
-  setMessage("GAME OVER - PRESS R OR TAP", true);
+  setMessage("", false);
+  showGameOverPanel("GAME OVER", canResume);
 }
 
 function jump() {
@@ -431,20 +473,11 @@ function detectCollision() {
 
     if (o.type === "milestone" && o.milestoneIndex === unlockedMilestones) {
       if (milestoneCheckpoint && milestoneCheckpoint.milestoneIndex === o.milestoneIndex) {
-        score = milestoneCheckpoint.score;
-        speed = milestoneCheckpoint.speed;
-        tick = milestoneCheckpoint.tick;
-        horizonOffset = milestoneCheckpoint.horizonOffset;
-        dino.y = milestoneCheckpoint.dinoY;
-        dino.vy = milestoneCheckpoint.dinoVy;
-        dino.jumping = milestoneCheckpoint.dinoJumping;
+        resumeSnapshot = milestoneCheckpoint;
+        resumeObstacle = o;
+        gameOver("GAME OVER", true);
+        return false;
       }
-
-      retryObstacle = o;
-      retryWaitTicks = 90;
-      state = "retry_wait";
-      setMessage(`RETRY: ${MILESTONES[o.milestoneIndex].retryText}`, true);
-      return false;
     }
 
     return true;
@@ -569,16 +602,6 @@ function update() {
       best = Math.floor(score);
       localStorage.setItem("chrome-dino-best", String(best));
     }
-  } else if (state === "retry_wait") {
-    retryWaitTicks -= 1;
-    if (retryWaitTicks <= 0) {
-      if (retryObstacle) {
-        retryObstacle.x = dino.x + 500;
-      }
-      retryObstacle = null;
-      setMessage("", false);
-      state = "running";
-    }
   } else if (state === "idle") {
     updateClouds();
     horizonOffset += 1;
@@ -589,6 +612,15 @@ function update() {
 }
 
 window.addEventListener("keydown", (e) => {
+  if (state === "gameover") {
+    if (["Space", "Enter", "KeyC"].includes(e.code) && !resumeBtn.hidden) {
+      e.preventDefault();
+      resumeFromGameOver();
+      return;
+    }
+    return;
+  }
+
   if (state === "milestone_wait") {
     if (["Space", "ArrowUp", "KeyW"].includes(e.code)) {
       e.preventDefault();
@@ -611,19 +643,8 @@ window.addEventListener("keydown", (e) => {
 
   if (["Space", "ArrowUp", "KeyW"].includes(e.code)) {
     e.preventDefault();
-    if (state === "gameover") {
-      resetGame();
-      startGame();
-      jump();
-      return;
-    }
     jump();
     return;
-  }
-
-  if (e.code === "KeyR" && state === "gameover") {
-    resetGame();
-    startGame();
   }
 });
 
@@ -647,8 +668,25 @@ milestoneClose.addEventListener("click", () => {
   closeMilestoneCard();
 });
 
+resumeBtn.addEventListener("click", () => {
+  resumeFromGameOver();
+});
+
+restartBtn.addEventListener("click", () => {
+  resetGame();
+  startGame();
+});
+
 window.addEventListener("pointerdown", (e) => {
-  if (e.target.closest("#milestone-banner") || e.target.closest("#milestone-card")) {
+  if (
+    e.target.closest("#milestone-banner") ||
+    e.target.closest("#milestone-card") ||
+    e.target.closest("#gameover-panel")
+  ) {
+    return;
+  }
+
+  if (state === "gameover") {
     return;
   }
 
@@ -662,12 +700,6 @@ window.addEventListener("pointerdown", (e) => {
     return;
   }
 
-  if (state === "gameover") {
-    resetGame();
-    startGame();
-    jump();
-    return;
-  }
   jump();
 });
 

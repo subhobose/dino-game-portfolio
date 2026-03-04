@@ -119,6 +119,84 @@ body {
   background: #f4f4f4;
 }
 
+.gameover-panel {
+  position: absolute;
+  z-index: 3;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(380px, calc(100% - 36px));
+  border: 2px solid var(--ink);
+  background: #fff;
+  padding: 14px 16px;
+  text-align: center;
+  box-shadow: 0 8px 26px #0000001f;
+}
+
+.gameover-panel h2 {
+  margin: 0 0 12px;
+  font-size: 1rem;
+}
+
+.gameover-panel p {
+  margin: 0 0 12px;
+  font-size: 0.84rem;
+}
+
+.gameover-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.gameover-actions button {
+  border: 1px solid var(--ink);
+  background: #fff;
+  color: var(--ink);
+  padding: 7px 12px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.gameover-actions button:hover {
+  background: #f4f4f4;
+}
+
+.gameover-cta {
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.gameover-cta a {
+  border: 1px solid var(--ink);
+  color: var(--ink);
+  text-decoration: none;
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+}
+
+.gameover-cta a:hover {
+  background: #f4f4f4;
+}
+
+.gameover-cta a[aria-disabled="true"] {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.gameover-cta svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
 .controls {
   margin: 10px 0 0;
   text-align: center;
