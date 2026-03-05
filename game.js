@@ -1,11 +1,18 @@
 ﻿const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d", { alpha: false });
 const message = document.getElementById("message");
-const milestoneBanner = document.getElementById("milestone-banner");
+const unlockCard = document.getElementById("unlock-card");
+const unlockHeadline = document.getElementById("unlock-headline");
+const unlockSummary = document.getElementById("unlock-summary");
+const unlockMetric = document.getElementById("unlock-metric");
+const unlockDetails = document.getElementById("unlock-details");
+const unlockContinue = document.getElementById("unlock-continue");
 const milestoneCard = document.getElementById("milestone-card");
 const milestoneClose = document.getElementById("milestone-close");
 const milestoneTitle = document.getElementById("milestone-title");
 const milestoneCompanies = document.getElementById("milestone-companies");
+const milestoneRole = document.getElementById("milestone-role");
+const milestoneImpact = document.getElementById("milestone-impact");
 const milestoneChallenge = document.getElementById("milestone-challenge");
 const milestoneAction = document.getElementById("milestone-action");
 const milestoneOutcome = document.getElementById("milestone-outcome");
@@ -14,9 +21,14 @@ const milestoneTech = document.getElementById("milestone-tech");
 const gameoverPanel = document.getElementById("gameover-panel");
 const gameoverTitle = document.getElementById("gameover-title");
 const gameoverYear = document.getElementById("gameover-year");
+const gameoverStats = document.getElementById("gameover-stats");
 const gameoverNote = document.getElementById("gameover-note");
 const resumeBtn = document.getElementById("resume-btn");
 const restartBtn = document.getElementById("restart-btn");
+const skipPortfolioBtn = document.getElementById("skip-portfolio");
+const portfolioScan = document.getElementById("portfolio-scan");
+const portfolioCards = document.getElementById("portfolio-cards");
+const closePortfolioBtn = document.getElementById("close-portfolio");
 
 const W = canvas.width;
 const H = canvas.height;
@@ -29,6 +41,7 @@ const NIGHT_INTERVAL = 700;
 const TIMELINE_START_YEAR = 2020;
 const TIMELINE_END_YEAR = new Date().getFullYear();
 const TIMELINE_SCORE_PER_YEAR = 220;
+const UNLOCK_AUTO_DISMISS_TICKS = 600;
 const DINO_SCALE = 3;
 const DINO_X = 82;
 const MILESTONE_SPAWN_LEAD_SCORE = Math.round((W + 70 - DINO_X) * 0.1);
@@ -36,9 +49,12 @@ const MILESTONES = [
   {
     year: "2020/2021",
     title: "Trajectory Shift",
-    challenge: "Mechanical engineering path did not match what energized me most: writing software.",
-    action: "Completed a CS minor, doubled down on coding projects, and built software fundamentals.",
-    outcome: "Pivoted into tech and joined Amadeus as a Software Developer.",
+    role: "Software Developer",
+    challenge: "Mechanical track; software was the real pull.",
+    action: "Pivoted with CS minor and shipping projects.",
+    outcome: "Landed software role at Amadeus.",
+    metric: "Career Pivot",
+    summary: "Mechanical -> software pivot unlocked.",
     timelineYear: 2020.9,
     retryText: "CLEAR THE 2020/2021 PIVOT",
     companies: ["amadeus"],
@@ -46,9 +62,12 @@ const MILESTONES = [
   {
     year: "Mid 2021",
     title: "Automation Impact",
-    challenge: "Manual regression for a leading travel chatbot consumed large recurring effort.",
-    action: "Built a Robot Framework based regression suite and introduced the approach to the team.",
-    outcome: "Saved 30+ hours of manual work and inspired additional projects built on the same pattern.",
+    role: "QA Engineer",
+    challenge: "Regression cycles were painfully manual.",
+    action: "Built RobotFramework + Python + REST automation.",
+    outcome: "Saved 30+ hours per cycle.",
+    metric: "30+ hrs saved",
+    summary: "Automation breakthrough at scale.",
     timelineYear: 2021.5,
     retryText: "CLEAR THE AUTOMATION IMPACT",
     tech: ["robotframework", "python", "restapi"],
@@ -57,9 +76,12 @@ const MILESTONES = [
   {
     year: "Early 2022",
     title: "Graduate Leap",
-    challenge: "Wanted deeper fundamentals and stronger depth in Data Structures and ML.",
-    action: "Joined UTD for a Master's in Computer Science with a Data Science focus.",
-    outcome: "Started formal advanced training to level up core CS rigor and ML capability.",
+    role: "MSCS Student",
+    challenge: "Needed deeper SW and ML depth.",
+    action: "Started MSCS (Data Science focus) at UTD.",
+    outcome: "Built stronger CS and ML foundations.",
+    metric: "MSCS @ UTD",
+    summary: "Graduate mission initiated.",
     timelineYear: 2022.15,
     retryText: "CLEAR THE GRADUATE LEAP",
     companies: ["utd"],
@@ -67,9 +89,12 @@ const MILESTONES = [
   {
     year: "Early 2023",
     title: "Deep Learning Research",
-    challenge: "First ML research stint on video learning data (Continuous self-supervised learning)",
-    action: "Built an adaptive data augmentation strategy for streaming video dataset.",
-    outcome: "Higher fine-tuning accuracy with lower storage footprint.",
+    role: "Research Assistant",
+    challenge: "First ML research on video learning data.",
+    action: "Designed adaptive augmentation for ContSSL.",
+    outcome: "Better accuracy with smaller storage footprint.",
+    metric: "15% more accurate, 60% less storage",
+    summary: "Research milestone: ContSSL gains.",
     timelineYear: 2023.2,
     retryText: "CLEAR THE RESEARCH MILESTONE",
     tech: ["python", "pytorch", "cuda"],
@@ -78,30 +103,39 @@ const MILESTONES = [
   {
     year: "Mid 2023",
     title: "Ericsson DevOps",
-    challenge: "First role in DevOps and networking as an Integration Engineer Intern at Ericsson.",
-    action: "Used existing CI/CD knowledge to optimize release pipelines with Python on GitLab.",
-    outcome: "Improved rollback timing and made deployments safer during integration cycles.",
+    role: "Integration Engineer Intern",
+    challenge: "First deep dive into DevOps + networking.",
+    action: "Optimized CI/CD upgrade and rollback paths.",
+    outcome: "Safer deployments, faster rollback times.",
+    metric: "40% improved Rollback speed",
+    summary: "DevOps + networking impact delivered for 3+ clients.",
     timelineYear: 2023.5,
-    retryText: "CLEAR THE ERICSSON DEVOPS MILESTONE",
+    retryText: "CLEAR THE ERICSSON DEVOPS INTERN MILESTONE",
     tech: ["python", "gitlab"],
     companies: ["ericsson"],
   },
   {
     year: "Early 2024",
-    title: "AI Recruiter Engine",
-    challenge: "While preparing to graduate with my Master's, recruiter outreach was the key bottleneck to landing interviews.",
-    action: "Built an AI-based LinkedIn automation web app to scrape recruiter data, send tailored invites quickly, run NLP replies on the user's behalf, and rank recruiters by compatibility.",
-    outcome: "Increased callback rates through faster personalized outreach and smarter recruiter prioritization.",
+    title: "HiredIn Tool",
+    role: "Builder",
+    challenge: "Recruiter outreach bottlenecked interviews.",
+    action: "Built AI outreach + compatibility ranking web app.",
+    outcome: "Higher callbacks via targeted conversations.",
+    metric: "Callback rate up 30%",
+    summary: "AI recruiting engine shipped.",
     timelineYear: 2024.35,
-    retryText: "CLEAR THE AI RECRUITER ENGINE",
+    retryText: "CLEAR THE AI RECRUITER APP MILESTONE",
     tech: ["selenium", "openai", "mysql"],
   },
   {
     year: "Mid 2024-2026",
     title: "Current Role Impact",
-    challenge: "Built critical reliability and platform features across backup, security, and 5G operations.",
-    action: "Developed backup/restore solutions, a Flask vulnerability scanning app, optimized CI/CD upgrade pipelines, and delivered a user activation dashboard for 5G core.",
-    outcome: "Enabled safer operations, faster upgrades, and clearer activation visibility for core platform teams.",
+    role: "Integration Engineer",
+    challenge: "Needed reliability across 5G core workflows.",
+    action: "Built backup/restore, scanner, upgrades, dashboard.",
+    outcome: "Safer ops, faster upgrades, clearer activation.",
+    metric: "30% faster user onboarding",
+    summary: "High impact across EIC and 5G core platform.",
     timelineYear: 2025.4,
     retryText: "CLEAR THE CURRENT ROLE MILESTONE",
     tech: ["python", "postgresql", "javascript"],
@@ -237,6 +271,16 @@ let milestoneCheckpoint = null;
 let resumeSnapshot = null;
 let resumeObstacle = null;
 let journeyCompleted = false;
+let unlockPauseTicks = 0;
+let unlockSummaryTicks = 0;
+let unlockPulseTicks = 0;
+let shakeTicks = 0;
+let timelineSnapTicks = 0;
+let lastTimelineYear = TIMELINE_START_YEAR;
+let miniObstacleTimer = 140;
+let miniObstacleBudget = 2;
+let lastMiniSegment = 0;
+let scanPreviousState = null;
 
 const clouds = Array.from({ length: 4 }, (_, i) => ({
   x: 220 + i * 220,
@@ -246,10 +290,46 @@ const clouds = Array.from({ length: 4 }, (_, i) => ({
   speed: 0.35 + i * 0.05,
 }));
 
+const skyline = Array.from({ length: 10 }, (_, i) => ({
+  x: i * 120,
+  w: 70 + (i % 3) * 20,
+  h: 18 + (i % 4) * 10,
+}));
+
+const unlockParticles = [];
 const obstacles = [];
 
 function fmt(n) {
   return String(Math.floor(n)).padStart(5, "0");
+}
+
+function timelineInfo() {
+  const yearSpan = Math.max(1, TIMELINE_END_YEAR - TIMELINE_START_YEAR);
+  const totalTimelineScore = yearSpan * TIMELINE_SCORE_PER_YEAR;
+  const progress = Math.max(0, Math.min(1, score / totalTimelineScore));
+  const currentYear = Math.min(
+    TIMELINE_END_YEAR,
+    TIMELINE_START_YEAR + Math.floor(progress * yearSpan)
+  );
+  return { yearSpan, totalTimelineScore, progress, currentYear };
+}
+
+function impactScore(metric = "") {
+  const matches = metric.match(/\d+(\.\d+)?/g);
+  if (!matches || matches.length === 0) return 0;
+  return Math.max(...matches.map((n) => Number(n)));
+}
+
+function topImpactMetrics(limit = 3) {
+  return MILESTONES.map((m, idx) => ({
+    metric: m.metric || "",
+    score: impactScore(m.metric || ""),
+    idx,
+  }))
+    .filter((x) => x.metric.length > 0)
+    .sort((a, b) => b.score - a.score || b.idx - a.idx)
+    .slice(0, limit)
+    .map((x) => x.metric);
 }
 
 function palette() {
@@ -296,6 +376,54 @@ function drawCloud(c, color) {
   ctx.fillRect(c.x + 20, c.y + 1, c.w - 22, c.h);
 }
 
+function updateSkyline() {
+  for (const block of skyline) {
+    block.x -= speed * 0.08;
+    if (block.x + block.w < -20) {
+      block.x = W + Math.random() * 90;
+      block.h = 16 + Math.random() * 22;
+    }
+  }
+}
+
+function drawSkyline(colors) {
+  ctx.fillStyle = colors.sub;
+  for (const block of skyline) {
+    ctx.fillRect(block.x, BASE_Y - 36 - block.h, block.w, block.h);
+  }
+}
+
+function spawnUnlockBurst(x, y) {
+  for (let i = 0; i < 22; i += 1) {
+    unlockParticles.push({
+      x,
+      y,
+      vx: (Math.random() - 0.5) * 4.8,
+      vy: -Math.random() * 3.2 - 0.8,
+      life: 36 + Math.random() * 20,
+    });
+  }
+}
+
+function updateUnlockParticles() {
+  for (let i = unlockParticles.length - 1; i >= 0; i -= 1) {
+    const p = unlockParticles[i];
+    p.life -= 1;
+    p.vy += 0.12;
+    p.x += p.vx;
+    p.y += p.vy;
+    if (p.life <= 0) unlockParticles.splice(i, 1);
+  }
+}
+
+function drawUnlockParticles(colors) {
+  ctx.fillStyle = colors.ink;
+  for (const p of unlockParticles) {
+    const size = p.life > 20 ? 3 : 2;
+    ctx.fillRect(p.x, p.y, size, size);
+  }
+}
+
 function drawGround(colors) {
   ctx.fillStyle = colors.ink;
   ctx.fillRect(0, BASE_Y + 2, W, 3);
@@ -340,10 +468,22 @@ function spawnNextMilestone() {
   });
 }
 
+function spawnMiniObstacle() {
+  obstacles.push({
+    type: "bird",
+    x: W + 44,
+    y: BASE_Y - 92,
+    w: 30,
+    h: 18,
+  });
+}
+
 function drawObstacles(colors) {
   for (const o of obstacles) {
     if (o.type === "milestone") {
       drawMilestoneObstacle(o, colors.ink);
+    } else if (o.type === "bird") {
+      drawMiniObstacle(o, colors.ink);
     }
   }
 }
@@ -356,6 +496,18 @@ function drawMilestoneObstacle(o, color) {
   ctx.fillRect(o.x + 12, o.y + 16, 12, 4);
   ctx.fillRect(o.x + 12, o.y + 30, 12, 4);
   ctx.fillRect(o.x + 12, o.y + 44, 12, 4);
+}
+
+function drawMiniObstacle(o, color) {
+  ctx.fillStyle = color;
+  const wingUp = Math.floor(tick / 8) % 2 === 0;
+  ctx.fillRect(o.x + 6, o.y + 7, 18, 8);
+  ctx.fillRect(o.x + 22, o.y + 9, 7, 4);
+  if (wingUp) {
+    ctx.fillRect(o.x + 10, o.y + 2, 10, 4);
+  } else {
+    ctx.fillRect(o.x + 10, o.y + 11, 10, 4);
+  }
 }
 
 function dinoBounds() {
@@ -384,14 +536,16 @@ function hideGameOverPanel() {
 
 function showGameOverPanel(title, canResume, note = "") {
   gameoverTitle.textContent = title;
-  const yearSpan = Math.max(1, TIMELINE_END_YEAR - TIMELINE_START_YEAR);
-  const totalTimelineScore = yearSpan * TIMELINE_SCORE_PER_YEAR;
-  const progress = Math.max(0, Math.min(1, score / totalTimelineScore));
-  const yearReached = Math.min(
-    TIMELINE_END_YEAR,
-    TIMELINE_START_YEAR + Math.floor(progress * yearSpan)
-  );
-  gameoverYear.textContent = `Year Reached: ${yearReached}`;
+  const info = timelineInfo();
+  const yearReached = info.currentYear;
+  if (title === "JOURNEY COMPLETE") {
+    gameoverYear.textContent = `Timeline Completed: ${TIMELINE_START_YEAR}-${TIMELINE_END_YEAR}`;
+    gameoverStats.textContent = "I build reliable systems that scale, ship fast, and deliver measurable impact.";
+  } else {
+    gameoverYear.textContent = `Year Reached: ${yearReached}`;
+    gameoverStats.textContent = `MILESTONES ${unlockedMilestones}/${TOTAL_MILESTONES}  •  SCORE ${fmt(score)}`;
+  }
+  gameoverStats.hidden = false;
   if (note) {
     gameoverNote.textContent = note;
     gameoverNote.hidden = false;
@@ -403,14 +557,20 @@ function showGameOverPanel(title, canResume, note = "") {
   gameoverPanel.hidden = false;
 }
 
-function showMilestoneBanner(index) {
+function showUnlockCard(index) {
   const milestone = MILESTONES[index];
-  milestoneBanner.textContent = `MILESTONE UNLOCKED - ${milestone.year} ${milestone.title} (CLICK)`;
-  milestoneBanner.hidden = false;
+  unlockHeadline.textContent = milestone.title.toUpperCase();
+  unlockSummary.textContent = milestone.summary || milestone.outcome;
+  unlockMetric.textContent = milestone.metric || "MILESTONE UNLOCKED";
+  unlockCard.hidden = false;
+  unlockPauseTicks = UNLOCK_AUTO_DISMISS_TICKS;
+  unlockSummaryTicks = 150;
+  unlockPulseTicks = 22;
 }
 
-function hideMilestoneBanner() {
-  milestoneBanner.hidden = true;
+function hideUnlockCard() {
+  unlockCard.hidden = true;
+  unlockSummaryTicks = 0;
 }
 
 function renderMilestoneTech(techList = []) {
@@ -449,6 +609,33 @@ function renderMilestoneTech(techList = []) {
   }
 
   milestoneTechRow.hidden = false;
+}
+
+function buildTechPill(tech) {
+  const pill = document.createElement("span");
+  pill.className = `tech-pill ${tech}`;
+
+  const icon = document.createElement("span");
+  if (TECH_ICON_URL[tech]) {
+    const img = document.createElement("img");
+    img.src = TECH_ICON_URL[tech];
+    img.alt = "";
+    img.width = 13;
+    img.height = 13;
+    img.loading = "lazy";
+    icon.appendChild(img);
+  } else {
+    const fallback = document.createElement("span");
+    fallback.className = "tech-dot";
+    fallback.textContent = "{ }";
+    icon.appendChild(fallback);
+  }
+  pill.appendChild(icon);
+
+  const label = document.createElement("span");
+  label.textContent = TECH_LABELS[tech] || tech;
+  pill.appendChild(label);
+  return pill;
 }
 
 function renderMilestoneCompanies(companies = []) {
@@ -495,18 +682,93 @@ function renderMilestoneCompanies(companies = []) {
   }
 }
 
+function renderPortfolioScanCards() {
+  portfolioCards.innerHTML = "";
+
+  for (const milestone of MILESTONES) {
+    const card = document.createElement("article");
+    card.className = "scan-card";
+
+    const head = document.createElement("header");
+    head.className = "scan-head";
+
+    const title = document.createElement("h3");
+    title.className = "scan-title";
+    title.textContent = `${milestone.year} - ${milestone.title}`;
+    head.appendChild(title);
+
+    const metric = document.createElement("span");
+    metric.className = "scan-metric";
+    metric.textContent = milestone.metric || "Impact";
+    head.appendChild(metric);
+    card.appendChild(head);
+
+    const role = document.createElement("p");
+    role.className = "scan-role";
+    const companies = (milestone.companies || [])
+      .map((c) => COMPANY_LABELS[c] || c)
+      .join(" / ");
+    role.textContent = companies ? `${milestone.role || "Role"} @ ${companies}` : milestone.role || "Role";
+    card.appendChild(role);
+
+    const problem = document.createElement("p");
+    problem.className = "scan-line";
+    problem.innerHTML = `<strong>Problem:</strong> ${milestone.challenge}`;
+    card.appendChild(problem);
+
+    const move = document.createElement("p");
+    move.className = "scan-line";
+    move.innerHTML = `<strong>Move:</strong> ${milestone.action}`;
+    card.appendChild(move);
+
+    const result = document.createElement("p");
+    result.className = "scan-line";
+    result.innerHTML = `<strong>Result:</strong> ${milestone.outcome}`;
+    card.appendChild(result);
+
+    if (Array.isArray(milestone.tech) && milestone.tech.length > 0) {
+      const techRow = document.createElement("div");
+      techRow.className = "milestone-tech scan-tech";
+      for (const tech of milestone.tech) {
+        techRow.appendChild(buildTechPill(tech));
+      }
+      card.appendChild(techRow);
+    }
+
+    portfolioCards.appendChild(card);
+  }
+}
+
+function openPortfolioScan() {
+  portfolioScan.hidden = false;
+  if (state !== "scan") {
+    scanPreviousState = state;
+    state = "scan";
+  }
+}
+
+function closePortfolioScan() {
+  portfolioScan.hidden = true;
+  if (state === "scan") {
+    state = scanPreviousState || "idle";
+  }
+  scanPreviousState = null;
+}
+
 function openMilestoneCard() {
   if (activeMilestoneIndex < 0 || activeMilestoneIndex >= MILESTONES.length) return;
   const milestone = MILESTONES[activeMilestoneIndex];
   milestoneTitle.firstChild.textContent = `${milestone.year} - ${milestone.title} `;
   renderMilestoneCompanies(milestone.companies || []);
+  milestoneRole.textContent = milestone.role || "Role";
+  milestoneImpact.textContent = milestone.metric || "Impact";
   milestoneChallenge.textContent = milestone.challenge;
   milestoneAction.textContent = milestone.action;
   milestoneOutcome.textContent = milestone.outcome;
   renderMilestoneTech(milestone.tech || []);
   state = "milestone";
   milestoneCard.hidden = false;
-  hideMilestoneBanner();
+  hideUnlockCard();
 }
 
 function closeMilestoneCard() {
@@ -521,7 +783,7 @@ function closeMilestoneCard() {
 
 function resumeFromMilestoneWait() {
   if (state !== "milestone_wait") return;
-  hideMilestoneBanner();
+  hideUnlockCard();
   state = "running";
 }
 
@@ -561,8 +823,20 @@ function resetGame() {
   resumeSnapshot = null;
   resumeObstacle = null;
   journeyCompleted = false;
+  unlockPauseTicks = 0;
+  unlockSummaryTicks = 0;
+  unlockPulseTicks = 0;
+  shakeTicks = 0;
+  timelineSnapTicks = 0;
+  lastTimelineYear = TIMELINE_START_YEAR;
+  miniObstacleTimer = 140;
+  miniObstacleBudget = 2;
+  lastMiniSegment = 0;
+  unlockParticles.length = 0;
+  portfolioScan.hidden = true;
+  scanPreviousState = null;
   milestoneCard.hidden = true;
-  hideMilestoneBanner();
+  hideUnlockCard();
   hideGameOverPanel();
   dino.vy = 0;
   dino.jumping = false;
@@ -576,7 +850,7 @@ function gameOver(title = "Game Over", canResume = false, note = "") {
   best = Math.max(best, Math.floor(score));
   localStorage.setItem("chrome-dino-best", String(best));
   setMessage("", false);
-  showGameOverPanel("GAME OVER", canResume, note);
+  showGameOverPanel(title, canResume, note);
 }
 
 function jump() {
@@ -603,6 +877,22 @@ function updatePhysics() {
 function updateObstacles() {
   spawnNextMilestone();
 
+  if (lastMiniSegment !== unlockedMilestones) {
+    lastMiniSegment = unlockedMilestones;
+    miniObstacleBudget = 2;
+    miniObstacleTimer = 110 + Math.random() * 70;
+  }
+
+  miniObstacleTimer -= speed;
+  const hasActiveMilestone = obstacles.some(
+    (o) => o.type === "milestone" && o.milestoneIndex === unlockedMilestones
+  );
+  if (miniObstacleBudget > 0 && miniObstacleTimer <= 0 && !hasActiveMilestone) {
+    spawnMiniObstacle();
+    miniObstacleBudget -= 1;
+    miniObstacleTimer = 170 + Math.random() * 120;
+  }
+
   for (let i = obstacles.length - 1; i >= 0; i -= 1) {
     const o = obstacles[i];
     o.x -= speed;
@@ -612,7 +902,8 @@ function updateObstacles() {
       unlockedMilestones += 1;
       milestoneCheckpoint = null;
       setMessage("", false);
-      showMilestoneBanner(activeMilestoneIndex);
+      showUnlockCard(activeMilestoneIndex);
+      spawnUnlockBurst(dino.x + 40, dino.y + 18);
       state = "milestone_wait";
       obstacles.splice(i, 1);
       continue;
@@ -635,6 +926,8 @@ function updateClouds() {
 function detectCollision() {
   const d = dinoBounds();
   for (const o of obstacles) {
+    if (o.type === "bird") continue;
+
     const box = {
       x: o.x + 4,
       y: o.y + 3,
@@ -647,6 +940,7 @@ function detectCollision() {
       if (milestoneCheckpoint && milestoneCheckpoint.milestoneIndex === o.milestoneIndex) {
         resumeSnapshot = milestoneCheckpoint;
         resumeObstacle = o;
+        shakeTicks = 16;
         gameOver("GAME OVER", true);
         return false;
       }
@@ -673,17 +967,14 @@ function drawHud(colors) {
 }
 
 function drawTimeline(colors) {
-  const yearSpan = Math.max(1, TIMELINE_END_YEAR - TIMELINE_START_YEAR);
-  const totalTimelineScore = yearSpan * TIMELINE_SCORE_PER_YEAR;
-  const progress = Math.max(0, Math.min(1, score / totalTimelineScore));
+  const info = timelineInfo();
+  const yearSpan = info.yearSpan;
+  const progress = info.progress;
   const timelineX = 30;
   const timelineY = 44;
   const timelineW = W - 60;
   const timelineH = 6;
-  const currentYear = Math.min(
-    TIMELINE_END_YEAR,
-    TIMELINE_START_YEAR + Math.floor(progress * yearSpan)
-  );
+  const currentYear = info.currentYear;
 
   ctx.fillStyle = colors.sub;
   ctx.fillRect(timelineX, timelineY, timelineW, timelineH);
@@ -705,9 +996,10 @@ function drawTimeline(colors) {
 
     if (year === currentYear) {
       const label = String(year);
-      const labelW = Math.max(34, label.length * 8 + 8);
+      const snapBoost = timelineSnapTicks > 0 ? 6 : 0;
+      const labelW = Math.max(34, label.length * 8 + 8) + snapBoost;
       ctx.fillStyle = colors.ink;
-      ctx.fillRect(x - labelW / 2, timelineY - 24, labelW, 16);
+      ctx.fillRect(x - labelW / 2, timelineY - 24 - snapBoost * 0.3, labelW, 16 + snapBoost * 0.2);
       ctx.fillStyle = colors.bg;
       ctx.fillText(label, x, timelineY - 12);
     } else if (year % 2 === 1 || year === TIMELINE_END_YEAR || year === TIMELINE_START_YEAR) {
@@ -731,11 +1023,17 @@ function drawNightDetails(colors) {
 
 function render() {
   const colors = palette();
+  ctx.save();
+  if (shakeTicks > 0) {
+    const amp = Math.min(4, shakeTicks * 0.25);
+    ctx.translate((Math.random() - 0.5) * amp, (Math.random() - 0.5) * amp);
+  }
   ctx.fillStyle = colors.bg;
   ctx.fillRect(0, 0, W, H);
 
   drawNightDetails(colors);
   drawTimeline(colors);
+  drawSkyline(colors);
 
   for (const c of clouds) {
     drawCloud(c, colors.cloud);
@@ -743,6 +1041,7 @@ function render() {
 
   drawGround(colors);
   drawObstacles(colors);
+  drawUnlockParticles(colors);
 
   const runFrame = Math.floor(tick / 6) % 2;
   const sprite = dino.jumping ? DINO_JUMP : runFrame === 0 ? DINO_RUN_1 : DINO_RUN_2;
@@ -750,9 +1049,21 @@ function render() {
   drawSprite(sprite, dino.x, dino.y, DINO_SCALE, colors.ink, !blink);
 
   drawHud(colors);
+  ctx.restore();
 }
 
 function update() {
+  if (shakeTicks > 0) shakeTicks -= 1;
+  if (timelineSnapTicks > 0) timelineSnapTicks -= 1;
+  if (unlockPulseTicks > 0) {
+    unlockPulseTicks -= 1;
+    const scale = 1 + unlockPulseTicks * 0.005;
+    unlockCard.style.transform = `translateX(-50%) scale(${scale.toFixed(3)})`;
+  } else {
+    unlockCard.style.transform = "translateX(-50%) scale(1)";
+  }
+  updateUnlockParticles();
+
   if (state === "running" || state === "idle") {
     tick += 1;
   }
@@ -763,6 +1074,7 @@ function update() {
     horizonOffset += speed;
 
     updateClouds();
+    updateSkyline();
     updatePhysics();
     updateObstacles();
 
@@ -775,17 +1087,30 @@ function update() {
       localStorage.setItem("chrome-dino-best", String(best));
     }
 
-    const yearSpan = Math.max(1, TIMELINE_END_YEAR - TIMELINE_START_YEAR);
-    const totalTimelineScore = yearSpan * TIMELINE_SCORE_PER_YEAR;
-    if (!journeyCompleted && unlockedMilestones === TOTAL_MILESTONES && score >= totalTimelineScore) {
+    const info = timelineInfo();
+    if (info.currentYear !== lastTimelineYear) {
+      timelineSnapTicks = 16;
+      lastTimelineYear = info.currentYear;
+    }
+    if (!journeyCompleted && unlockedMilestones === TOTAL_MILESTONES && score >= info.totalTimelineScore) {
       journeyCompleted = true;
-      gameOver("GAME OVER", false, "Thanks for being a part of my journey.");
+      gameOver(
+        "JOURNEY COMPLETE",
+        false,
+        "Thanks for being part of my journey. Let's build the next chapter together."
+      );
       render();
       requestAnimationFrame(update);
       return;
     }
+  } else if (state === "milestone_wait") {
+    unlockPauseTicks -= 1;
+    if (unlockPauseTicks <= 0) {
+      resumeFromMilestoneWait();
+    }
   } else if (state === "idle") {
     updateClouds();
+    updateSkyline();
     horizonOffset += 1;
   }
 
@@ -794,6 +1119,14 @@ function update() {
 }
 
 window.addEventListener("keydown", (e) => {
+  if (state === "scan") {
+    if (e.code === "Escape") {
+      e.preventDefault();
+      closePortfolioScan();
+    }
+    return;
+  }
+
   if (state === "gameover") {
     if (["Space", "Enter", "KeyC"].includes(e.code) && !resumeBtn.hidden) {
       e.preventDefault();
@@ -830,15 +1163,24 @@ window.addEventListener("keydown", (e) => {
   }
 });
 
-milestoneBanner.addEventListener("pointerdown", (e) => {
+canvas.addEventListener("pointerdown", (e) => {
+  if (state === "scan" || state === "milestone" || state === "gameover") return;
+  if (e.pointerType === "mouse" && e.button !== 0) return;
+  e.preventDefault();
+  jump();
+});
+
+unlockCard.addEventListener("pointerdown", (e) => {
   e.stopPropagation();
 });
 
-milestoneBanner.addEventListener("click", () => {
-  if (activeMilestoneIndex >= 0 && !milestoneCardViewed[activeMilestoneIndex]) {
+unlockDetails.addEventListener("click", () => {
+  if (activeMilestoneIndex >= 0) {
     openMilestoneCard();
-    return;
   }
+});
+
+unlockContinue.addEventListener("click", () => {
   resumeFromMilestoneWait();
 });
 
@@ -859,31 +1201,14 @@ restartBtn.addEventListener("click", () => {
   startGame();
 });
 
-window.addEventListener("pointerdown", (e) => {
-  if (
-    e.target.closest("#milestone-banner") ||
-    e.target.closest("#milestone-card") ||
-    e.target.closest("#gameover-panel")
-  ) {
-    return;
-  }
+skipPortfolioBtn.addEventListener("click", () => {
+  openPortfolioScan();
+});
 
-  if (state === "gameover") {
-    return;
-  }
-
-  if (state === "milestone_wait") {
-    resumeFromMilestoneWait();
-    jump();
-    return;
-  }
-
-  if (state === "milestone") {
-    return;
-  }
-
-  jump();
+closePortfolioBtn.addEventListener("click", () => {
+  closePortfolioScan();
 });
 
 resetGame();
+renderPortfolioScanCards();
 update();

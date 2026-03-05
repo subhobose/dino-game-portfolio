@@ -62,22 +62,56 @@ body {
   background: #ffffffea;
 }
 
-.milestone-banner {
+.unlock-card {
   position: absolute;
-  top: 80px;
+  z-index: 2;
+  top: 82px;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translateX(-50%) scale(1);
+  width: min(440px, calc(100% - 30px));
+  border: 2px solid var(--ink);
+  background: #fff;
+  color: var(--ink);
+  padding: 10px 12px;
+  text-align: center;
+  box-shadow: 0 8px 24px #0000001a;
+}
+
+.unlock-headline {
+  margin: 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+}
+
+.unlock-summary {
+  margin: 5px 0 0;
+  font-size: 0.82rem;
+}
+
+.unlock-metric {
+  margin: 7px 0 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.unlock-actions {
+  margin-top: 9px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.unlock-actions button {
   border: 1px solid var(--ink);
   background: #fff;
   color: var(--ink);
-  padding: 6px 12px;
+  padding: 5px 8px;
   font-family: inherit;
-  font-size: 0.78rem;
-  letter-spacing: 0.08em;
+  font-size: 0.72rem;
   cursor: pointer;
 }
 
-.milestone-banner:hover {
+.unlock-actions button:hover {
   background: #f4f4f4;
 }
 
@@ -97,6 +131,26 @@ body {
 .milestone-card h2 {
   margin: 0 0 8px;
   font-size: 1.05rem;
+}
+
+.milestone-meta {
+  margin-bottom: 8px;
+  display: flex;
+  gap: 8px;
+}
+
+.milestone-role,
+.milestone-impact {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.milestone-impact {
+  border-color: var(--ink);
+  font-size: 0.82rem;
 }
 
 .milestone-companies {
@@ -297,6 +351,15 @@ body {
   font-size: 0.84rem;
 }
 
+#gameover-stats {
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+}
+
+#gameover-note {
+  font-weight: 700;
+}
+
 .gameover-actions {
   display: flex;
   justify-content: center;
@@ -359,6 +422,134 @@ body {
   letter-spacing: 0.08em;
 }
 
+.actions-row {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.skip-portfolio {
+  border: 1px solid var(--ink);
+  background: #fff;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.skip-portfolio:hover {
+  background: #f4f4f4;
+}
+
+.portfolio-scan {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  background: #00000070;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+}
+
+.portfolio-scan[hidden] {
+  display: none !important;
+}
+
+.scan-panel {
+  width: min(960px, 100%);
+  max-height: min(86vh, 980px);
+  overflow: auto;
+  border: 1px solid var(--line);
+  background: #fff;
+  padding: 14px;
+}
+
+.portfolio-scan h2 {
+  margin: 0;
+  font-size: 0.95rem;
+  letter-spacing: 0.06em;
+}
+
+.scan-headbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.close-portfolio {
+  border: 1px solid var(--ink);
+  background: #fff;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 0.72rem;
+  padding: 5px 9px;
+  cursor: pointer;
+}
+
+.close-portfolio:hover {
+  background: #f4f4f4;
+}
+
+.scan-subtitle {
+  margin: 6px 0 12px;
+  color: #777;
+  font-size: 0.78rem;
+}
+
+.portfolio-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.scan-card {
+  border: 1px solid var(--line);
+  background: #fff;
+  padding: 10px;
+}
+
+.scan-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.scan-title {
+  margin: 0;
+  font-size: 0.88rem;
+}
+
+.scan-metric {
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.scan-role {
+  margin: 0 0 8px;
+  font-size: 0.75rem;
+  color: #666;
+}
+
+.scan-line {
+  margin: 4px 0;
+  font-size: 0.8rem;
+}
+
+.scan-tech {
+  margin-top: 8px;
+}
+
 @media (max-width: 640px) {
   body {
     padding: 8px;
@@ -368,7 +559,13 @@ body {
     width: min(1000px, 100vw);
   }
 
+  .actions-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
   .controls {
     font-size: 0.68rem;
+    text-align: left;
   }
 }

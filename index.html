@@ -11,18 +11,31 @@
       <section class="game-shell" aria-label="Chrome dinosaur runner game">
         <canvas id="game" width="960" height="300" role="img" aria-label="Pixel dinosaur runner"></canvas>
         <p id="message" class="message">PRESS SPACE OR TAP TO START</p>
-        <button id="milestone-banner" class="milestone-banner" type="button" hidden>MILESTONE UNLOCKED - VIEW DETAILS</button>
+        <section id="unlock-card" class="unlock-card" hidden>
+          <p id="unlock-headline" class="unlock-headline">MILESTONE UNLOCKED</p>
+          <p id="unlock-summary" class="unlock-summary">Quick highlight</p>
+          <p id="unlock-metric" class="unlock-metric">+Impact</p>
+          <div class="unlock-actions">
+            <button id="unlock-details" type="button">View Details</button>
+            <button id="unlock-continue" type="button">Keep Running</button>
+          </div>
+        </section>
         <article id="milestone-card" class="milestone-card" hidden>
           <h2 id="milestone-title">Milestone <span id="milestone-companies" class="milestone-companies"></span></h2>
-          <p><strong>Challenge:</strong> <span id="milestone-challenge"></span></p>
-          <p><strong>Action:</strong> <span id="milestone-action"></span></p>
-          <p><strong>Outcome:</strong> <span id="milestone-outcome"></span></p>
+          <div class="milestone-meta">
+            <span id="milestone-role" class="milestone-role">Role</span>
+            <span id="milestone-impact" class="milestone-impact">Impact</span>
+          </div>
+          <p><strong>Problem:</strong> <span id="milestone-challenge"></span></p>
+          <p><strong>Move:</strong> <span id="milestone-action"></span></p>
+          <p><strong>Result:</strong> <span id="milestone-outcome"></span></p>
           <p id="milestone-tech-row" hidden><strong>Tech Stack:</strong> <span id="milestone-tech" class="milestone-tech"></span></p>
           <button id="milestone-close" type="button">Continue Journey</button>
         </article>
         <section id="gameover-panel" class="gameover-panel" hidden>
           <h2 id="gameover-title">Game Over</h2>
           <p id="gameover-year">Year Reached: --</p>
+          <p id="gameover-stats" hidden></p>
           <p id="gameover-note" hidden></p>
           <div class="gameover-actions">
             <button id="resume-btn" type="button">Resume</button>
@@ -52,7 +65,41 @@
           </div>
         </section>
       </section>
-      <p class="controls">SPACE / UP / W / TAP TO JUMP</p>
+      <div class="actions-row">
+        <p class="controls">SPACE / UP / W / TAP TO JUMP</p>
+        <button id="skip-portfolio" class="skip-portfolio" type="button">Open Portfolio Scan</button>
+      </div>
+      <section id="portfolio-scan" class="portfolio-scan" aria-label="Portfolio scan mode" hidden>
+        <div class="scan-panel">
+          <div class="scan-headbar">
+            <h2>Portfolio Scan Mode</h2>
+            <button id="close-portfolio" class="close-portfolio" type="button">Close</button>
+          </div>
+          <div class="gameover-cta">
+            <a href="https://github.com/subhobose" target="_blank" rel="noopener noreferrer" aria-label="GitHub" title="GitHub">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 2C6.5 2 2 6.6 2 12.2c0 4.5 2.9 8.3 6.9 9.6.5.1.7-.2.7-.5v-1.9c-2.8.6-3.3-1.2-3.3-1.2-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.5 2.4 1.1 3 0 .1-.7.4-1.1.7-1.4-2.2-.3-4.5-1.1-4.5-5 0-1.1.4-2 .9-2.8-.1-.2-.4-1.3.1-2.8 0 0 .8-.3 2.8 1 .8-.2 1.6-.3 2.5-.3.8 0 1.7.1 2.5.3 1.9-1.3 2.8-1 2.8-1 .5 1.5.2 2.6.1 2.8.6.8.9 1.7.9 2.8 0 3.9-2.4 4.7-4.6 5 .4.3.7.9.7 1.9v2.8c0 .3.2.6.7.5 4-1.3 6.9-5.1 6.9-9.6C22 6.6 17.5 2 12 2z"/>
+              </svg>
+            </a>
+            <a href="https://www.linkedin.com/in/subhrangsubose" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" title="LinkedIn">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M6.9 8.4H3.4V20h3.5V8.4zM5.1 2.8a2 2 0 100 4 2 2 0 000-4zM20.6 13.3c0-3.4-1.8-5-4.3-5-2 0-2.9 1.1-3.4 1.8V8.4H9.4V20h3.5v-5.7c0-1.5.3-2.9 2.1-2.9s1.9 1.7 1.9 3V20h3.5v-6.7z"/>
+              </svg>
+            </a>
+            <a href="#" aria-label="Resume" title="Resume" aria-disabled="true">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M6 2h9l5 5v15a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2zm8 1.5V8h4.5L14 3.5zM8 11h8v1.8H8V11zm0 3.8h8v1.8H8v-1.8zm0 3.8h5v1.8H8v-1.8z"/>
+              </svg>
+            </a>
+            <a href="mailto:subhrangsubose.app@gmail.com" aria-label="Email" title="Email">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M3 5h18a2 2 0 012 2v10a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2zm0 2v.4l9 5.8 9-5.8V7H3zm18 3.8l-8.5 5.5a1 1 0 01-1 0L3 10.8V17h18v-6.2z"/>
+              </svg>
+            </a>
+          </div>
+          <div id="portfolio-cards" class="portfolio-cards"></div>
+        </div>
+      </section>
     </main>
     <script src="game.js"></script>
   </body>
