@@ -99,10 +99,164 @@ body {
   font-size: 1.05rem;
 }
 
+.milestone-companies {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+.company-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 2px 7px 2px 5px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  line-height: 1;
+  background: #fff;
+}
+
+.company-pill img {
+  width: 12px;
+  height: 12px;
+  display: block;
+}
+
+.company-monogram {
+  font-size: 0.56rem;
+  letter-spacing: 0.03em;
+}
+
+.company-wordmark {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: lowercase;
+}
+
+.company-wordmark.utd-block {
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  background: #ef7d00;
+  color: #fff;
+  border-radius: 3px;
+  padding: 2px 4px;
+}
+
+.company-pill.amadeus {
+  border-color: #1f5fb4;
+  color: #1a57a8;
+}
+
+.company-pill.ericsson {
+  border-color: #1976d2;
+  color: #0f5fa9;
+}
+
+.company-pill.utd {
+  border-color: #d26b1e;
+  color: #a95514;
+}
+
 .milestone-card p {
   margin: 8px 0;
   font-size: 0.86rem;
   line-height: 1.35;
+}
+
+.milestone-tech {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  vertical-align: middle;
+}
+
+.tech-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 2px 8px 2px 6px;
+  font-size: 0.72rem;
+  line-height: 1;
+  background: #fff;
+}
+
+.tech-pill svg {
+  width: 13px;
+  height: 13px;
+  display: block;
+}
+
+.tech-pill img {
+  width: 13px;
+  height: 13px;
+  display: block;
+}
+
+.tech-dot {
+  font-size: 0.58rem;
+  font-weight: 700;
+}
+
+.tech-pill.python {
+  border-color: #3f6fa0;
+  color: #2f5b89;
+}
+
+.tech-pill.gitlab {
+  border-color: #e1722a;
+  color: #c45416;
+}
+
+.tech-pill.selenium {
+  border-color: #43b02a;
+  color: #2b7f1b;
+}
+
+.tech-pill.openai {
+  border-color: #555;
+  color: #111;
+}
+
+.tech-pill.mysql {
+  border-color: #2b87a0;
+  color: #16617a;
+}
+
+.tech-pill.pytorch {
+  border-color: #f26430;
+  color: #d94f1f;
+}
+
+.tech-pill.cuda {
+  border-color: #56a33a;
+  color: #2f7b16;
+}
+
+.tech-pill.robotframework {
+  border-color: #555;
+  color: #333;
+}
+
+.tech-pill.restapi {
+  border-color: #4b75b2;
+  color: #2e5e9e;
+}
+
+.tech-pill.postgresql {
+  border-color: #3f78b7;
+  color: #245f9f;
+}
+
+.tech-pill.javascript {
+  border-color: #c6ab00;
+  color: #8a7400;
 }
 
 .milestone-card button {

@@ -5,12 +5,16 @@ const milestoneBanner = document.getElementById("milestone-banner");
 const milestoneCard = document.getElementById("milestone-card");
 const milestoneClose = document.getElementById("milestone-close");
 const milestoneTitle = document.getElementById("milestone-title");
+const milestoneCompanies = document.getElementById("milestone-companies");
 const milestoneChallenge = document.getElementById("milestone-challenge");
 const milestoneAction = document.getElementById("milestone-action");
 const milestoneOutcome = document.getElementById("milestone-outcome");
+const milestoneTechRow = document.getElementById("milestone-tech-row");
+const milestoneTech = document.getElementById("milestone-tech");
 const gameoverPanel = document.getElementById("gameover-panel");
 const gameoverTitle = document.getElementById("gameover-title");
 const gameoverYear = document.getElementById("gameover-year");
+const gameoverNote = document.getElementById("gameover-note");
 const resumeBtn = document.getElementById("resume-btn");
 const restartBtn = document.getElementById("restart-btn");
 
@@ -37,6 +41,7 @@ const MILESTONES = [
     outcome: "Pivoted into tech and joined Amadeus as a Software Developer.",
     timelineYear: 2020.9,
     retryText: "CLEAR THE 2020/2021 PIVOT",
+    companies: ["amadeus"],
   },
   {
     year: "Mid 2021",
@@ -46,15 +51,18 @@ const MILESTONES = [
     outcome: "Saved 30+ hours of manual work and inspired additional projects built on the same pattern.",
     timelineYear: 2021.5,
     retryText: "CLEAR THE AUTOMATION IMPACT",
+    tech: ["robotframework", "python", "restapi"],
+    companies: ["amadeus"],
   },
   {
     year: "Early 2022",
     title: "Graduate Leap",
-    challenge: "Wanted deeper fundamentals and stronger depth in data structures and machine learning.",
-    action: "Gained admission to UTD for a Master's in Computer Science with a Data Science focus.",
+    challenge: "Wanted deeper fundamentals and stronger depth in Data Structures and ML.",
+    action: "Joined UTD for a Master's in Computer Science with a Data Science focus.",
     outcome: "Started formal advanced training to level up core CS rigor and ML capability.",
     timelineYear: 2022.15,
     retryText: "CLEAR THE GRADUATE LEAP",
+    companies: ["utd"],
   },
   {
     year: "Early 2023",
@@ -64,9 +72,80 @@ const MILESTONES = [
     outcome: "Higher fine-tuning accuracy with lower storage footprint.",
     timelineYear: 2023.2,
     retryText: "CLEAR THE RESEARCH MILESTONE",
+    tech: ["python", "pytorch", "cuda"],
+    companies: ["utd"],
+  },
+  {
+    year: "Mid 2023",
+    title: "Ericsson DevOps",
+    challenge: "First role in DevOps and networking as an Integration Engineer Intern at Ericsson.",
+    action: "Used existing CI/CD knowledge to optimize release pipelines with Python on GitLab.",
+    outcome: "Improved rollback timing and made deployments safer during integration cycles.",
+    timelineYear: 2023.5,
+    retryText: "CLEAR THE ERICSSON DEVOPS MILESTONE",
+    tech: ["python", "gitlab"],
+    companies: ["ericsson"],
+  },
+  {
+    year: "Early 2024",
+    title: "AI Recruiter Engine",
+    challenge: "While preparing to graduate with my Master's, recruiter outreach was the key bottleneck to landing interviews.",
+    action: "Built an AI-based LinkedIn automation web app to scrape recruiter data, send tailored invites quickly, run NLP replies on the user's behalf, and rank recruiters by compatibility.",
+    outcome: "Increased callback rates through faster personalized outreach and smarter recruiter prioritization.",
+    timelineYear: 2024.35,
+    retryText: "CLEAR THE AI RECRUITER ENGINE",
+    tech: ["selenium", "openai", "mysql"],
+  },
+  {
+    year: "Mid 2024-2026",
+    title: "Current Role Impact",
+    challenge: "Built critical reliability and platform features across backup, security, and 5G operations.",
+    action: "Developed backup/restore solutions, a Flask vulnerability scanning app, optimized CI/CD upgrade pipelines, and delivered a user activation dashboard for 5G core.",
+    outcome: "Enabled safer operations, faster upgrades, and clearer activation visibility for core platform teams.",
+    timelineYear: 2025.4,
+    retryText: "CLEAR THE CURRENT ROLE MILESTONE",
+    tech: ["python", "postgresql", "javascript"],
+    companies: ["ericsson"],
   },
 ];
 const TOTAL_MILESTONES = MILESTONES.length;
+
+const TECH_ICON_URL = {
+  python: "https://cdn.simpleicons.org/python",
+  gitlab: "https://cdn.simpleicons.org/gitlab",
+  selenium: "https://cdn.simpleicons.org/selenium",
+  openai: "https://cdn.simpleicons.org/openai",
+  mysql: "https://cdn.simpleicons.org/mysql",
+  postgresql: "https://cdn.simpleicons.org/postgresql",
+  javascript: "https://cdn.simpleicons.org/javascript",
+  pytorch: "https://cdn.simpleicons.org/pytorch",
+  cuda: "https://cdn.simpleicons.org/nvidia",
+  robotframework: "https://cdn.simpleicons.org/robotframework",
+};
+
+const TECH_LABELS = {
+  python: "Python",
+  gitlab: "GitLab",
+  selenium: "Selenium",
+  openai: "OpenAI API",
+  mysql: "MySQL",
+  postgresql: "PostgreSQL",
+  javascript: "JavaScript",
+  pytorch: "PyTorch",
+  cuda: "CUDA",
+  robotframework: "Robot Framework",
+  restapi: "REST API",
+};
+
+const COMPANY_ICON_URL = {
+  ericsson: "https://cdn.simpleicons.org/ericsson",
+};
+
+const COMPANY_LABELS = {
+  amadeus: "Amadeus",
+  ericsson: "Ericsson",
+  utd: "UTD",
+};
 
 const DINO_RUN_1 = [
   "............#######.",
@@ -157,6 +236,7 @@ let milestoneCardViewed = [];
 let milestoneCheckpoint = null;
 let resumeSnapshot = null;
 let resumeObstacle = null;
+let journeyCompleted = false;
 
 const clouds = Array.from({ length: 4 }, (_, i) => ({
   x: 220 + i * 220,
@@ -302,7 +382,7 @@ function hideGameOverPanel() {
   gameoverPanel.hidden = true;
 }
 
-function showGameOverPanel(title, canResume) {
+function showGameOverPanel(title, canResume, note = "") {
   gameoverTitle.textContent = title;
   const yearSpan = Math.max(1, TIMELINE_END_YEAR - TIMELINE_START_YEAR);
   const totalTimelineScore = yearSpan * TIMELINE_SCORE_PER_YEAR;
@@ -312,6 +392,13 @@ function showGameOverPanel(title, canResume) {
     TIMELINE_START_YEAR + Math.floor(progress * yearSpan)
   );
   gameoverYear.textContent = `Year Reached: ${yearReached}`;
+  if (note) {
+    gameoverNote.textContent = note;
+    gameoverNote.hidden = false;
+  } else {
+    gameoverNote.textContent = "";
+    gameoverNote.hidden = true;
+  }
   resumeBtn.hidden = !canResume;
   gameoverPanel.hidden = false;
 }
@@ -326,13 +413,97 @@ function hideMilestoneBanner() {
   milestoneBanner.hidden = true;
 }
 
+function renderMilestoneTech(techList = []) {
+  milestoneTech.innerHTML = "";
+  if (!Array.isArray(techList) || techList.length === 0) {
+    milestoneTechRow.hidden = true;
+    return;
+  }
+
+  for (const tech of techList) {
+    const pill = document.createElement("span");
+    pill.className = `tech-pill ${tech}`;
+
+    const icon = document.createElement("span");
+    if (TECH_ICON_URL[tech]) {
+      const img = document.createElement("img");
+      img.src = TECH_ICON_URL[tech];
+      img.alt = "";
+      img.width = 13;
+      img.height = 13;
+      img.loading = "lazy";
+      icon.appendChild(img);
+    } else {
+      const fallback = document.createElement("span");
+      fallback.className = "tech-dot";
+      fallback.textContent = "{ }";
+      icon.appendChild(fallback);
+    }
+    pill.appendChild(icon);
+
+    const label = document.createElement("span");
+    label.textContent = TECH_LABELS[tech] || tech;
+    pill.appendChild(label);
+
+    milestoneTech.appendChild(pill);
+  }
+
+  milestoneTechRow.hidden = false;
+}
+
+function renderMilestoneCompanies(companies = []) {
+  milestoneCompanies.innerHTML = "";
+  if (!Array.isArray(companies) || companies.length === 0) return;
+
+  for (const company of companies) {
+    const badge = document.createElement("span");
+    badge.className = `company-pill ${company}`;
+    badge.title = COMPANY_LABELS[company] || company;
+
+    if (company === "amadeus") {
+      const wordmark = document.createElement("span");
+      wordmark.className = "company-wordmark amadeus";
+      wordmark.textContent = "amadeus";
+      badge.appendChild(wordmark);
+    } else if (company === "utd") {
+      const wordmark = document.createElement("span");
+      wordmark.className = "company-wordmark utd-block";
+      wordmark.textContent = "UTD";
+      badge.appendChild(wordmark);
+    } else if (COMPANY_ICON_URL[company]) {
+      const img = document.createElement("img");
+      img.src = COMPANY_ICON_URL[company];
+      img.alt = "";
+      img.width = 12;
+      img.height = 12;
+      img.loading = "lazy";
+      badge.appendChild(img);
+    } else {
+      const monogram = document.createElement("span");
+      monogram.className = "company-monogram";
+      monogram.textContent = (COMPANY_LABELS[company] || company).slice(0, 3).toUpperCase();
+      badge.appendChild(monogram);
+    }
+
+    if (company !== "amadeus" && company !== "utd") {
+      const label = document.createElement("span");
+      label.textContent = COMPANY_LABELS[company] || company;
+      badge.appendChild(label);
+    }
+
+    milestoneCompanies.appendChild(badge);
+  }
+}
+
 function openMilestoneCard() {
   if (activeMilestoneIndex < 0 || activeMilestoneIndex >= MILESTONES.length) return;
   const milestone = MILESTONES[activeMilestoneIndex];
-  milestoneTitle.textContent = `${milestone.year} - ${milestone.title}`;
+  milestoneTitle.firstChild.textContent = `${milestone.year} - ${milestone.title} `;
+  renderMilestoneCompanies(milestone.companies || []);
   milestoneChallenge.textContent = milestone.challenge;
   milestoneAction.textContent = milestone.action;
   milestoneOutcome.textContent = milestone.outcome;
+  renderMilestoneTech(milestone.tech || []);
   state = "milestone";
   milestoneCard.hidden = false;
   hideMilestoneBanner();
@@ -389,6 +560,7 @@ function resetGame() {
   milestoneCheckpoint = null;
   resumeSnapshot = null;
   resumeObstacle = null;
+  journeyCompleted = false;
   milestoneCard.hidden = true;
   hideMilestoneBanner();
   hideGameOverPanel();
@@ -399,12 +571,12 @@ function resetGame() {
   setMessage("PRESS SPACE OR TAP TO START", true);
 }
 
-function gameOver(title = "Game Over", canResume = false) {
+function gameOver(title = "Game Over", canResume = false, note = "") {
   state = "gameover";
   best = Math.max(best, Math.floor(score));
   localStorage.setItem("chrome-dino-best", String(best));
   setMessage("", false);
-  showGameOverPanel("GAME OVER", canResume);
+  showGameOverPanel("GAME OVER", canResume, note);
 }
 
 function jump() {
@@ -601,6 +773,16 @@ function update() {
     if (Math.floor(score) > best) {
       best = Math.floor(score);
       localStorage.setItem("chrome-dino-best", String(best));
+    }
+
+    const yearSpan = Math.max(1, TIMELINE_END_YEAR - TIMELINE_START_YEAR);
+    const totalTimelineScore = yearSpan * TIMELINE_SCORE_PER_YEAR;
+    if (!journeyCompleted && unlockedMilestones === TOTAL_MILESTONES && score >= totalTimelineScore) {
+      journeyCompleted = true;
+      gameOver("GAME OVER", false, "Thanks for being a part of my journey.");
+      render();
+      requestAnimationFrame(update);
+      return;
     }
   } else if (state === "idle") {
     updateClouds();
