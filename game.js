@@ -25,6 +25,7 @@ const gameoverStats = document.getElementById("gameover-stats");
 const gameoverNote = document.getElementById("gameover-note");
 const resumeBtn = document.getElementById("resume-btn");
 const restartBtn = document.getElementById("restart-btn");
+const quickRestartBtn = document.getElementById("quick-restart");
 const skipPortfolioBtn = document.getElementById("skip-portfolio");
 const portfolioScan = document.getElementById("portfolio-scan");
 const portfolioCards = document.getElementById("portfolio-cards");
@@ -1197,6 +1198,11 @@ resumeBtn.addEventListener("click", () => {
 });
 
 restartBtn.addEventListener("click", () => {
+  resetGame();
+  startGame();
+});
+
+quickRestartBtn.addEventListener("click", () => {
   resetGame();
   startGame();
 });
