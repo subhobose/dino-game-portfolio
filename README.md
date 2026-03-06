@@ -12,7 +12,7 @@ Open `http://localhost:8080`.
 
 ## Deploy on GitHub Pages
 
-This repo is configured to deploy automatically from `master` using GitHub Actions.
+This repo is configured to deploy automatically from `main` using GitHub Actions.
 
 1. Push this code to GitHub.
 2. In GitHub: `Settings -> Pages`.
@@ -25,3 +25,11 @@ This repo is configured to deploy automatically from `master` using GitHub Actio
 
 - This app is static (`index.html`, `styles.css`, `game.js`) and does not require Node on GitHub Pages.
 - `server.js` is only for local development.
+
+## Analytics (Microsoft Clarity)
+
+1. Create a project at https://clarity.microsoft.com/.
+2. Copy your Clarity Project ID.
+3. In `index.html`, update:
+   `meta name="clarity-project-id" content="REPLACE_WITH_CLARITY_PROJECT_ID"`
+4. Commit + push.
